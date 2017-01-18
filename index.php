@@ -10,7 +10,19 @@
 </head>
 
 <body>
-    <h1>Yay, GitHub!</h1>
+    <div class="container">
+        <h1>Instagram Downloader</h1>
+
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="input-group">
+                    <input type="text" class="form-control" aria-label="...">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default">Download</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 </body>
 
 </html>
