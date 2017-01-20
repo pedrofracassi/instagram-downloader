@@ -1,25 +1,25 @@
-var instagram_urls = [
-    "http://instagram.com/",
-    "https://instagram.com/",
-    "instagram.com/",
-    "www.instagram.com/",
-];
+var instagramurls = [
+    "http://instagram.com",
+    "https://instagram.com",
+    "https://www.instagram.com",
+    "http://www.instagram.com",
+    "http://instagram.com",
+    "instagram.com",
+    "www.instagram.com"
+]
 
 function startFetching() {
-    var linkToMedia = document.getElementById('linkToMedia').value;
-    if (!linkToMedia.endsWith('?__a=1')) {
-        linkToMedia = linkToMedia + "?__a=1"
-    }
-    if (isInstagramUrl(linkToMedia)) {
-        // Start fetching stuff
+    var value = document.getElementById('input').value;
+    if (isInstagramUrl(value)) {
+        alert('The URL you entered is valid! :D');
     } else {
-        alert('The URL you entered isn\'t an instagram URL');
+        alert('The URL you entered is not an instagram URL.');
     }
 }
 
 function isInstagramUrl(url) {
-    for (i = 0; i < instagram_urls.length; i++) {
-        if (url.startsWith(instagram_urls[i])) {
+    for (i = 0; i < instagramurls.length; i++) {
+        if (url.startsWith(instagramurls[i])) {
             return true;
         }
     }
