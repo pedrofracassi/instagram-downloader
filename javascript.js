@@ -8,13 +8,19 @@ var instagramurls = [
     "www.instagram.com"
 ]
 
-function startFetching() {
-    var value = document.getElementById('input').value;
-    if (isInstagramUrl(value)) {
-        alert('The URL you entered is valid! :D');
-    } else {
-        alert('The URL you entered is not an instagram URL.');
-    }
+function getText(url, callback) {
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+        if (request.readyState == 4) {
+            if (request.status == 200)
+            callback(request.responseText);
+            else {
+                callback("nex");
+            }
+        }
+    };
+    request.open('GET', url);
+    request.send();
 }
 
 function isInstagramUrl(url) {
@@ -24,4 +30,41 @@ function isInstagramUrl(url) {
         }
     }
     return false;
+}
+
+function startFetching() {
+    var value = document.getElementById('input').value;
+    if (isInstagramUrl(value)) {
+        // Adds ?__a=1 to the end of the URL, so it returns JSON.
+        if (!value.endsWith('?__a=1')) {
+            value = value + "?__a=1";
+        }
+
+        var query = "https://query.yahooapis.com/v1/public/yql" +
+        "?q=select%20*%20from%20html%20where%20url%3D\'" + encodeURIComponent(value) + "\'" +
+        "&format=json";
+
+        console.log(query);
+
+        // I'm using YQL because instagram doesen't allow Cross-Domain requests.
+        getText(query, function (data) {
+            var yahoo_json = JSON.parse(data);
+            var ig_json = JSON.parse(yahoo_json.query.results.body);
+            if (ig_json.user) {
+                // TODO: Add profile picture download
+                console.log('User!');
+
+            } else if (ig_json.media) {
+                // TODO: Add media download
+                if (ig_json.media.is_video) {
+                    console.log('Video!');
+                } else {
+                    console.log('Photo');
+                }
+            }
+        })
+    } else {
+        // TODO: Handle this
+        // URL entered is not from instagram
+    }
 }
