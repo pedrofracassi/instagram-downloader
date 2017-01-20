@@ -6,3 +6,9 @@
     margin-top: 10px;
     align-self: center;
 }
+.card-img-top {
+  width: 100%;
+}
+.cards {
+  margin-top: 30px;
+}
