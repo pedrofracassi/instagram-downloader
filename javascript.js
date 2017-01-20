@@ -1,3 +1,7 @@
+/**
+ * Array with a list of valid url starts for instagram
+ * @type {Array}
+ */
 var instagramurls = [
     "http://instagram.com",
     "https://instagram.com",
@@ -8,6 +12,11 @@ var instagramurls = [
     "www.instagram.com"
 ]
 
+/**
+ * Gets text from the web (or a local file if you want to)
+ * @param  {string}   url      Url to be downloaded
+ * @param  {Function} callback Function to be called after the text is downloaded
+ */
 function getText(url, callback) {
     var request = new XMLHttpRequest();
     request.onreadystatechange = function() {
@@ -23,6 +32,11 @@ function getText(url, callback) {
     request.send();
 }
 
+/**
+ * Checks if the given string is an instagram url
+ * @param  {string}   url The string to be checked
+ * @return {Boolean}      True if the string is an instagram url
+ */
 function isInstagramUrl(url) {
     for (i = 0; i < instagramurls.length; i++) {
         if (url.startsWith(instagramurls[i])) {
@@ -32,6 +46,23 @@ function isInstagramUrl(url) {
     return false;
 }
 
+/**
+ * Shows an error inside #mainPanel
+ * @param  {string} title Bold error text
+ * @param  {string} text  Main error text
+ */
+function showError(title, text) {
+    var div = document.createElement('div');
+    div.setAttribute('class', 'alert alert-danger');
+    div.setAttribute('role', 'alert');
+    div.setAttribute('id', 'errorAlert');
+    div.innerHTML = '<strong>Oops!</strong> This isn\'t an instagram link.';
+    document.getElementById('mainPanel').append(div);
+}
+
+/**
+ * Starts the process of getting information about the inputted link
+ */
 function startFetching() {
     var value = document.getElementById('input').value;
     if (isInstagramUrl(value)) {
@@ -49,22 +80,31 @@ function startFetching() {
         // I'm using YQL because instagram doesen't allow Cross-Domain requests.
         getText(query, function (data) {
             var yahoo_json = JSON.parse(data);
-            var ig_json = JSON.parse(yahoo_json.query.results.body);
-            if (ig_json.user) {
-                // TODO: Add profile picture download
-                console.log('User!');
-
-            } else if (ig_json.media) {
-                // TODO: Add media download
-                if (ig_json.media.is_video) {
-                    console.log('Video!');
+            if (yahoo_json.query.results.body) {
+                var ig_json = JSON.parse(yahoo_json.query.results.body);
+                if (ig_json.user) {
+                    console.log('User!');
+                    var pic320 = ig_json.user.profile_pic_url_hd;
+                    var pic1080 = ig_json.user.profile_pic_url_hd.replace('s320x320', 's1080x1080');
+                    var div = document.createElement('div');
+                    div.innerHTML = '<a download href="' + pic1080 + '"><img id="photo" src="' + pic320 + '"></a>';
+                    $('#mainPanel').append(div);
+                } else if (ig_json.media) {
+                    if (ig_json.media.is_video) {
+                        console.log('Video!');
+                        console.log('Photo');
+                    } else {
+                    }
                 } else {
-                    console.log('Photo');
+                    showError('Thats bad...', 'We couldn\'t recognize what this link was. Please check' +
+                    ' if the account that this link belongs to isn\'t private');
                 }
+            } else {
+                showError('Thats bad...', 'We couldn\'t recognize what this link was. Please check' +
+                ' if the account that this link belongs to isn\'t private');
             }
         })
     } else {
-        // TODO: Handle this
-        // URL entered is not from instagram
+        showError('Oops', 'This isn\'t an instagram link.');
     }
 }
