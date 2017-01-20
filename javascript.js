@@ -1,7 +1,7 @@
 /**
- * Array with a list of valid url starts for instagram
- * @type {Array}
- */
+* Array with a list of valid url starts for instagram
+* @type {Array}
+*/
 var instagramurls = [
     "http://instagram.com",
     "https://instagram.com",
@@ -13,10 +13,10 @@ var instagramurls = [
 ]
 
 /**
- * Gets text from the web (or a local file if you want to)
- * @param  {string}   url      Url to be downloaded
- * @param  {Function} callback Function to be called after the text is downloaded
- */
+* Gets text from the web (or a local file if you want to)
+* @param  {string}   url      Url to be downloaded
+* @param  {Function} callback Function to be called after the text is downloaded
+*/
 function getText(url, callback) {
     var request = new XMLHttpRequest();
     request.onreadystatechange = function() {
@@ -33,10 +33,10 @@ function getText(url, callback) {
 }
 
 /**
- * Checks if the given string is an instagram url
- * @param  {string}   url The string to be checked
- * @return {Boolean}      True if the string is an instagram url
- */
+* Checks if the given string is an instagram url
+* @param  {string}   url The string to be checked
+* @return {Boolean}      True if the string is an instagram url
+*/
 function isInstagramUrl(url) {
     for (i = 0; i < instagramurls.length; i++) {
         if (url.startsWith(instagramurls[i])) {
@@ -47,10 +47,10 @@ function isInstagramUrl(url) {
 }
 
 /**
- * Shows an error inside #mainPanel
- * @param  {string} title Bold error text
- * @param  {string} text  Main error text
- */
+* Shows an error inside #mainPanel
+* @param  {string} title Bold error text
+* @param  {string} text  Main error text
+*/
 function showError(title, text) {
     var div = document.createElement('div');
     div.setAttribute('class', 'alert alert-danger');
@@ -61,10 +61,11 @@ function showError(title, text) {
 }
 
 /**
- * Starts the process of getting information about the inputted link
- */
+* Starts the process of getting information about the inputted link
+*/
 function startFetching() {
     var value = document.getElementById('input').value;
+    document.getElementById('mainPanel').innerHTML = "";
     if (isInstagramUrl(value)) {
         // Adds ?__a=1 to the end of the URL, so it returns JSON.
         if (!value.endsWith('?__a=1')) {
@@ -83,17 +84,21 @@ function startFetching() {
             if (yahoo_json.query.results.body) {
                 var ig_json = JSON.parse(yahoo_json.query.results.body);
                 if (ig_json.user) {
-                    console.log('User!');
-                    var pic320 = ig_json.user.profile_pic_url_hd;
-                    var pic1080 = ig_json.user.profile_pic_url_hd.replace('s320x320', 's1080x1080');
-                    var div = document.createElement('div');
-                    div.innerHTML = '<a download href="' + pic1080 + '"><img id="photo" src="' + pic320 + '"></a>';
-                    $('#mainPanel').append(div);
+                    getText('card.html', function(data) {
+                        var div = document.createElement('div');
+                        div.innerHTML = data;
+                        div.getElementsByClassName('card-title')[0].innerHTML = ig_json.user.username;
+                        div.getElementsByClassName('card-text')[0].innerHTML = "Click the button below to download the user's profile picture.";
+                        div.getElementsByClassName('card-img-top')[0].setAttribute('src', ig_json.user.profile_pic_url);
+                        div.getElementsByClassName('btn')[0].setAttribute('href', ig_json.user.profile_pic_url_hd.replace('s320x320', 's1080x1080'));
+                        div.getElementsByClassName('btn')[0].setAttribute('download', ig_json.user.username + "_1080");
+                        $('#mainPanel').append(div);
+                    });
                 } else if (ig_json.media) {
                     if (ig_json.media.is_video) {
-                        console.log('Video!');
-                        console.log('Photo');
+                        // Thats a video!
                     } else {
+                        // Thats a photo!
                     }
                 } else {
                     showError('Thats bad...', 'We couldn\'t recognize what this link was. Please check' +
