@@ -60,6 +60,12 @@ function showError(title, text) {
     document.getElementById('mainPanel').append(div);
 }
 
+$('#input').on('keypress', function (e) {
+         if(e.which === 13){
+            startFetching();
+         }
+   });
+
 /**
 * Starts the process of getting information about the inputted link
 */
