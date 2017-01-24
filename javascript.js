@@ -10,7 +10,7 @@ var instagramurls = [
     "http://instagram.com",
     "instagram.com",
     "www.instagram.com"
-]
+];
 
 /**
 * Gets text from the web (or a local file if you want to)
@@ -22,7 +22,7 @@ function getText(url, callback) {
     request.onreadystatechange = function() {
         if (request.readyState == 4) {
             if (request.status == 200)
-            callback(request.responseText);
+                callback(request.responseText);
             else {
                 callback("nex");
             }
@@ -72,33 +72,56 @@ function startFetching() {
             value = value + "?__a=1";
         }
 
-        var query = "https://query.yahooapis.com/v1/public/yql" +
-        "?q=select%20*%20from%20html%20where%20url%3D\'" + encodeURIComponent(value) + "\'" +
-        "&format=json";
+        // Adds 'http://' to the start of the URL
+        if (!(value.startsWith('http://') || value.startsWith('https://'))) {
+            value = 'http://' + value;
+        }
+
+        var query = "https://allorigins.us/get?url=" + encodeURIComponent(value) + "&method=raw";
 
         console.log(query);
 
-        // I'm using YQL because instagram doesen't allow Cross-Domain requests.
+        // Using AllOrigins because instagram doesen't allow Cross-Domain requests.
         getText(query, function (data) {
-            var yahoo_json = JSON.parse(data);
-            if (yahoo_json.query.results.body) {
-                var ig_json = JSON.parse(yahoo_json.query.results.body);
-                if (ig_json.user) {
+            var json = JSON.parse(data);
+            if (json) {
+                if (json.user) {
                     getText('card.html', function(data) {
                         var div = document.createElement('div');
                         div.innerHTML = data;
-                        div.getElementsByClassName('card-title')[0].innerHTML = ig_json.user.username;
+                        div.getElementsByClassName('card-title')[0].innerHTML = json.user.username;
                         div.getElementsByClassName('card-text')[0].innerHTML = "Click the button below to download the user's profile picture.";
-                        div.getElementsByClassName('card-img-top')[0].setAttribute('src', ig_json.user.profile_pic_url);
-                        div.getElementsByClassName('btn')[0].setAttribute('href', ig_json.user.profile_pic_url_hd.replace('s320x320', 's1080x1080'));
-                        div.getElementsByClassName('btn')[0].setAttribute('download', ig_json.user.username + "_1080");
+                        div.getElementsByClassName('card-img-top')[0].setAttribute('src', json.user.profile_pic_url);
+                        div.getElementsByClassName('btn')[0].setAttribute('href', json.user.profile_pic_url_hd.replace('s320x320', 's1080x1080'));
+                        // FIXME: Picture not downloading with specified name
+                        div.getElementsByClassName('btn')[0].setAttribute('download', json.user.username + "_1080");
                         $('#mainPanel').append(div);
                     });
-                } else if (ig_json.media) {
-                    if (ig_json.media.is_video) {
-                        // Thats a video!
+                } else if (json.media) {
+                    if (json.media.is_video) {
+                        getText('card.html', function(data) {
+                            var div = document.createElement('div');
+                            div.innerHTML = data;
+                            div.getElementsByClassName('card-title')[0].innerHTML = json.media.owner.username;
+                            div.getElementsByClassName('card-text')[0].innerHTML = "Click the button below to download this video.";
+                            div.getElementsByClassName('card-img-top')[0].setAttribute('src', json.media.display_src);
+                            div.getElementsByClassName('btn')[0].setAttribute('href', json.media.video_url);
+                            // FIXME: Video not downloading with specified name
+                            div.getElementsByClassName('btn')[0].setAttribute('download', "vid_" + json.media.id);
+                            $('#mainPanel').append(div);
+                        });
                     } else {
-                        // Thats a photo!
+                        getText('card.html', function(data) {
+                            var div = document.createElement('div');
+                            div.innerHTML = data;
+                            div.getElementsByClassName('card-title')[0].innerHTML = json.media.owner.username;
+                            div.getElementsByClassName('card-text')[0].innerHTML = "Click the button below to download this picture.";
+                            div.getElementsByClassName('card-img-top')[0].setAttribute('src', json.media.display_src);
+                            div.getElementsByClassName('btn')[0].setAttribute('href', json.media.display_src);
+                            // FIXME: Picture not downloading with specified name
+                            div.getElementsByClassName('btn')[0].setAttribute('download', "pic_" + json.media.id);
+                            $('#mainPanel').append(div);
+                        });
                     }
                 } else {
                     showError('Thats bad...', 'We couldn\'t recognize what this link was. Please check' +

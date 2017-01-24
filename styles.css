@@ -7,8 +7,11 @@
     align-self: center;
 }
 .card-img-top {
-  width: 100%;
+    width: 100%;
 }
 .cards {
-  margin-top: 30px;
+    margin-top: 30px;
+}
+#mainPanel {
+    margin-top: 10px;
 }
